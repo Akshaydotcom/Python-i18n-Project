@@ -1,15 +1,18 @@
 import os
 import re
 from openai import OpenAI
-import argparse
 import json
 from dotenv import load_dotenv
+
 load_dotenv()
+
 api_key = os.getenv('OPENAI_API_KEY')
-parser=argparse.ArgumentParser(description='Translate string for i18n')
-parser.add_argument('--folder', required=True,help='Path to the src folder of the website')
-parser.add_argument('--language',required=True, help='Target language name (e.g. french, german)')
-args=parser.parse_args()
+
+client=OpenAI(
+    api_key=api_key
+)
+
+
 def extract_strings_from_file(file_path):
     jsx_strings = []
     with open(file_path, 'r', encoding='utf-8') as file:
@@ -55,28 +58,30 @@ def extract_readable_text(strings):
             readable_text.append(text)
     return readable_text
 
-codebase_dir = args.folder
-language=args.language
-text_strings = extract_strings_from_codebase(codebase_dir)
-readable_text=extract_readable_text(text_strings)
 
-client=OpenAI(
-    api_key=api_key
-)
+def chat_and_translate(client, language, readable_text):
+    response = client.chat.completions.create(
+    model="gpt-3.5-turbo-0125",
+    response_format={ "type": "json_object" },
+    messages=[
+        {"role": "system", "content": "You are a helpful translator assistant fluent in most lanugages designed to output JSON."},
+        {"role": "user", "content": f"Can you please translate the list of strings given below to {language}"},
+        {"role":"user","content":"Also, omit HTML, CSS, JS, React and other Web Development keywords from translation"},
+        {"role":"user","content":"Give me only the translated text as a list of individual strings, I do not need the originals"},
+        {"role":"user","content":"".join(readable_text)}
+    ]
+    )
 
-response = client.chat.completions.create(
-  model="gpt-3.5-turbo-0125",
-  response_format={ "type": "json_object" },
-  messages=[
-    {"role": "system", "content": "You are a helpful translator assistant fluent in most lanugages designed to output JSON."},
-    {"role": "user", "content": f"Can you please translate the list of strings given below to {language}"},
-    {"role":"user","content":"Also, omit HTML, CSS, JS, React and other Web Development keywords from translation"},
-    {"role":"user","content":"Give me only the translated text as a list of individual strings, I do not need the originals"},
-    {"role":"user","content":"".join(readable_text)}
-  ]
-)
+    return response
 
-Translation=response.choices[0].message.content
-json_filepath=f'{language}_translation.json'
-with open(json_filepath,'w', encoding="UTF-8") as f:
-    json.dump(Translation,f,ensure_ascii=False, indent=4)
+def create_translated_json(response, language):
+    Translation=response.choices[0].message.content
+    json_filepath=f'{language}_translation.json'
+    with open(json_filepath,'w', encoding="UTF-8") as f:
+        json.dump(Translation,f,ensure_ascii=False, indent=4)
+
+def main_function(codebase_dir, language):
+    text_strings = extract_strings_from_codebase(codebase_dir)
+    readable_text=extract_readable_text(text_strings)
+    response=chat_and_translate(client, language, readable_text)
+    create_translated_json(response, language)
