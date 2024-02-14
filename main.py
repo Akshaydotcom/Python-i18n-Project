@@ -74,14 +74,14 @@ def chat_and_translate(client, language, readable_text):
 
     return response
 
-def create_translated_json(response, language):
+def create_translated_json(response, language, dest_path):
     Translation=response.choices[0].message.content
-    json_filepath=f'{language}_translation.json'
+    json_filepath=dest_path+f'{language}_translation.json'
     with open(json_filepath,'w', encoding="UTF-8") as f:
         json.dump(Translation,f,ensure_ascii=False, indent=4)
 
-def main_function(codebase_dir, language):
+def main_function(codebase_dir, language, dest_path):
     text_strings = extract_strings_from_codebase(codebase_dir)
     readable_text=extract_readable_text(text_strings)
     response=chat_and_translate(client, language, readable_text)
-    create_translated_json(response, language)
+    create_translated_json(response, language, dest_path)
