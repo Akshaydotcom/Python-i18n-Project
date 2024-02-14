@@ -9,20 +9,22 @@ def start_translation():
 
 app = tk.Tk()
 app.title("i18n Translation Tool")
+app.geometry('400x400')
 
-
-tk.Label(app, text="Select Source Folder:").pack()
+tk.Label(app, text="Select Source Folder:").grid(row=0,column=2)
 folder_path = tk.StringVar()
-tk.Entry(app, textvariable=folder_path).pack()
-tk.Button(app, text="Browse", command=lambda: folder_path.set(filedialog.askdirectory())).pack()
+tk.Entry(app, textvariable=folder_path).grid(row=1, column=3)
+tk.Button(app, text="Browse", command=lambda: folder_path.set(filedialog.askdirectory())).grid(row=1,column=2)
 
 
-tk.Label(app, text="Select Target Language:").pack()
+tk.Label(app, text="Select Target Language:").grid(row=3,column=2)
+supported_languages=['French','German','Mandarin','Hindi','Russian']
 language_option = tk.StringVar()
-language_option.set("french") # default value
-tk.OptionMenu(app, language_option, "french", "german", "spanish").pack()
+language_option.set(supported_languages[0]) # default value
+tk.OptionMenu(app, language_option, *supported_languages).grid(row=3,column=3)
 
 # Start button
-tk.Button(app, text="Start Translation", command=start_translation).pack()
+tk.Button(app, text="Start Translation", command=start_translation).grid(row=5,column=2)
+tk.Button(app, text="Exit", command=app.quit).grid(row=5, column=3)
 
 app.mainloop()
