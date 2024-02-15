@@ -1,5 +1,6 @@
 import os
 import re
+import openai
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
@@ -60,19 +61,23 @@ def extract_readable_text(strings):
 
 
 def chat_and_translate(client, language, readable_text):
-    response = client.chat.completions.create(
-    model="gpt-3.5-turbo-0125",
-    response_format={ "type": "json_object" },
-    messages=[
-        {"role": "system", "content": "You are a helpful translator assistant fluent in most lanugages designed to output JSON."},
-        {"role": "user", "content": f"Can you please translate the list of strings given below to {language}"},
-        {"role":"user","content":"Also, omit HTML, CSS, JS, React and other Web Development keywords from translation"},
-        {"role":"user","content":"Give me only the translated text as a list of individual strings, I do not need the originals"},
-        {"role":"user","content":"".join(readable_text)}
-    ]
-    )
+    try:
+        response = client.chat.completions.create(
+        model="gpt-3.5-turbo-0125",
+        response_format={ "type": "json_object" },
+        messages=[
+            {"role": "system", "content": "You are a helpful translator assistant fluent in most lanugages designed to output JSON."},
+            {"role": "user", "content": f"Can you please translate the list of strings given below to {language}"},
+            {"role":"user","content":"Also, omit HTML, CSS, JS, React and other Web Development keywords from translation"},
+            {"role":"user","content":"Give me only the translated text as a list of individual strings, I do not need the originals"},
+            {"role":"user","content":"".join(readable_text)}
+        ]
+        )
+        return response
+    except openai.APIError as error:
+        return error.code
 
-    return response
+    
 
 def create_translated_json(response, language, dest_path):
     Translation=response.choices[0].message.content
