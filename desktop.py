@@ -1,7 +1,8 @@
 import tkinter as tk
 from PIL import Image, ImageTk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from main import main_function
+from threading import *
 
 def verify():
     folder = folder_path.get()
@@ -11,13 +12,22 @@ def verify():
         messagebox.showerror("Error","Choose Source Folder Correctly")
     elif not dest_folder:
         messagebox.showerror("Error","Choose Destination Folder Correctly")
-    else:
-        start_translation(folder, language, dest_folder)
+    
+    translation_thread = Thread(target=start_translation, args=(folder, language, dest_folder))
+    translation_thread.start()
+
+    progressbar.place(x=50, y=200, width=100)
+    progressbar.start()
     
 
 def start_translation(folder, language, dest_folder):
-    main_function(folder, language, dest_folder)
-    messagebox.showinfo("Success", "Translation Completed!")
+    try:
+        main_function(folder, language, dest_folder)
+        messagebox.showinfo("Success", "Translation Completed!")
+    finally:
+        progressbar.stop()
+        progressbar.place_forget()
+    
 
 app = tk.Tk()
 app.title("i18n Translation Tool")
@@ -27,6 +37,7 @@ ico = Image.open('p2.png')
 photo = ImageTk.PhotoImage(ico)
 app.wm_iconphoto(False, photo)
 
+progressbar=ttk.Progressbar(mode='indeterminate')
 
 tk.Label(app, text="Select Source Folder:").grid(row=0,column=2)
 folder_path = tk.StringVar()

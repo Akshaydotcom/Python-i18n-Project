@@ -81,7 +81,7 @@ def chat_and_translate(client, language, readable_text):
 
 def create_translated_json(response, language, dest_path):
     Translation=response.choices[0].message.content
-    json_filepath=dest_path+f'{language}_translation.json'
+    json_filepath=dest_path+f'/{language}_translation.json'
     with open(json_filepath,'w', encoding="UTF-8") as f:
         json.dump(Translation,f,ensure_ascii=False, indent=4)
 
