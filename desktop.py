@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 from tkinter import filedialog, messagebox, ttk
 from main import main_function
 from threading import *
+import customtkinter
 
 def verify():
     folder = folder_path.get()
@@ -28,37 +29,40 @@ def start_translation(folder, language, dest_folder):
         progressbar.stop()
         progressbar.place_forget()
     
-
-app = tk.Tk()
-app.title("i18n Translation Tool")
-app.geometry('400x400')
-
+app = customtkinter.CTk()
+app.title("LingoPy")
+app.geometry('500x500')
+titleFont=customtkinter.CTkFont(family='',size=25)
+titleImage=customtkinter.CTkImage(light_image=Image.open('p2.png'),size=(50,50))
+labelFont=customtkinter.CTkFont(family='',size=15)
 ico = Image.open('p2.png')
 photo = ImageTk.PhotoImage(ico)
 app.wm_iconphoto(False, photo)
 
 progressbar=ttk.Progressbar(mode='indeterminate')
+customtkinter.CTkLabel(app,text='LingoPy', font=titleFont).grid(row=0,column=3,pady=20)
+# customtkinter.CTkLabel(app,image=titleImage, text='').grid(row=0,column=3,pady=20)
 
-tk.Label(app, text="Select Source Folder:").grid(row=0,column=2)
+customtkinter.CTkLabel(app, text="Select Source Folder:", font=labelFont).grid(row=2,column=2,pady=10, padx=15)
 folder_path = tk.StringVar()
-tk.Entry(app, textvariable=folder_path).grid(row=1, column=3)
-tk.Button(app, text="Browse", command=lambda: folder_path.set(filedialog.askdirectory())).grid(row=1,column=2)
+customtkinter.CTkEntry(app, textvariable=folder_path).grid(row=4, column=4,pady=10)
+open_File_Directory=customtkinter.CTkButton(app, text="Browse", command=lambda: folder_path.set(filedialog.askdirectory())).grid(row=4,column=2,pady=10)
 
 
-tk.Label(app, text="Select Target Language:").grid(row=3,column=2)
+customtkinter.CTkLabel(app, text="Select Target Language:",font=labelFont).grid(row=6,column=2,pady=10,padx=15)
 supported_languages=['French','German','Mandarin','Hindi','Russian']
 language_option = tk.StringVar()
 language_option.set(supported_languages[0]) # default value
-tk.OptionMenu(app, language_option, *supported_languages).grid(row=3,column=3)
+customtkinter.CTkOptionMenu(app, variable=language_option, values=supported_languages).grid(row=6,column=4,pady=10)
 
-tk.Label(app, text='Select Destination Folder:').grid(row=4, column=2)
+customtkinter.CTkLabel(app, text='Select Destination Folder:',font=labelFont).grid(row=7, column=2,pady=10,padx=15)
 dest_path=tk.StringVar()
-tk.Entry(app, textvariable=dest_path).grid(row=5,column=3)
-tk.Button(app, text="Browse", command=lambda: dest_path.set(filedialog.askdirectory())).grid(row=5,column=2)
+customtkinter.CTkEntry(app, textvariable=dest_path).grid(row=9,column=4,pady=10)
+customtkinter.CTkButton(app, text="Browse", command=lambda: dest_path.set(filedialog.askdirectory())).grid(row=9,column=2,pady=10)
 
 
 # Start button
-tk.Button(app, text="Start Translation", command=verify).grid(row=6,column=2)
-tk.Button(app, text="Exit", command=app.quit).grid(row=6, column=3)
+customtkinter.CTkButton(app, text="Start Translation", command=verify).grid(row=12,column=2,pady=10)
+customtkinter.CTkButton(app, text="Exit", command=app.quit).grid(row=14, column=3,pady=10)
 
 app.mainloop()
