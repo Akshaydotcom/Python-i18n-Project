@@ -4,14 +4,10 @@ import openai
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
-
+from tkinter import messagebox
 load_dotenv()
 
-api_key = os.getenv('OPENAI_API_KEY')
-
-client=OpenAI(
-    api_key=api_key
-)
+# api_key = os.getenv('OPENAI_API_KEY')
 
 
 def extract_strings_from_file(file_path):
@@ -61,15 +57,14 @@ def extract_readable_text(strings):
             readable_text.append(text)
     return readable_text
 
-def convert_strings_to_JSON(client, readable_text):
+def convert_strings_to_JSON( readable_text):
     json_object = {f"key{i}": string for i, string in enumerate(readable_text, 1)}
     # Convert the dictionary to a JSON formatted string
     json_str = json.dumps(json_object, indent=4)
-    print(json_str)
     return json_str
 
 
-def chat_and_translate(client, language, readable_text):
+def chat_and_translate(client, language, readable_text, app):
     try:
         response = client.chat.completions.create(
         model="gpt-3.5-turbo-0125",
@@ -85,7 +80,9 @@ def chat_and_translate(client, language, readable_text):
         )
         return response
     except openai.APIError as error:
-        return error.code
+        # log_error(error)
+        show_error_to_user(error.message, app)
+        return error
 
     
 
@@ -95,10 +92,15 @@ def create_translated_json(response, language, dest_path):
     with open(json_filepath,'w', encoding="UTF-8") as f:
         json.dump(Translation,f,ensure_ascii=False, indent=4)
 
-def main_function(codebase__dir, language, dest):
+def show_error_to_user(message, app):
+    messagebox.showerror("Error: ",message, parent=app)
+
+def main_function(codebase__dir, language, dest, api_key, app):
     text_strings = extract_strings_from_codebase(codebase__dir)
-    readable_text=extract_readable_text(text_strings)
-    response1=convert_strings_to_JSON(client, readable_text)
-    # print(response1.choices[0].message.content)
-    response=chat_and_translate(client, language, response1)
+    readable_text=extract_readable_text(text_strings)    
+    client=OpenAI(
+        api_key=api_key
+    )
+    response1=convert_strings_to_JSON(readable_text)
+    response=chat_and_translate(client, language, response1, app)
     create_translated_json(response, language, dest)
